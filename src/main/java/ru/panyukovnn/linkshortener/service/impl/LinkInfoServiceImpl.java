@@ -35,7 +35,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
         LinkInfo savedLinkInfo = linkInfoRepository.save(linkInfo);
 
-        return toResponse(linkInfo);
+        return toResponse(savedLinkInfo);
     }
 
     @Override

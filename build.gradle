@@ -11,15 +11,24 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 java.targetCompatibility = JavaVersion.VERSION_17
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven {
+        url = uri("https://raw.githubusercontent.com/PanyukovNN/logging-starter-2/main/maven-repo")
+    }
 }
+
+def loggingStarterVersion = '1.2-SNAPSHOT'
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
 
-    implementation 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    implementation "ru.panyukovnn:logging-starter-2:${loggingStarterVersion}"
 
     implementation 'org.apache.commons:commons-lang3:3.0'
 

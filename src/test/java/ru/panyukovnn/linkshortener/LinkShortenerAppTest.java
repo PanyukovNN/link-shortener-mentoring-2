@@ -1,22 +1,16 @@
 package ru.panyukovnn.linkshortener;
 
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
-import ru.panyukovnn.linkshortener.annotation.LogExecutionTime;
 import ru.panyukovnn.linkshortener.dto.CreateShortLinkRequest;
 import ru.panyukovnn.linkshortener.dto.LinkInfoResponse;
 import ru.panyukovnn.linkshortener.repository.impl.LinkInfoRepositoryImpl;
 import ru.panyukovnn.linkshortener.service.LinkInfoService;
 import ru.panyukovnn.linkshortener.service.impl.LinkInfoServiceImpl;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static ru.panyukovnn.linkshortener.util.Constants.SHORT_LINK_LENGTH;
 
 class LinkShortenerAppTest {
@@ -64,39 +58,20 @@ class LinkShortenerAppTest {
             .forEach(System.out::println);
 
         System.out.println();
-
-        // Либо можем указать компаратор
-        linkInfoService.findByFilter().stream()
-            .sorted(Comparator.comparing(it -> it.getDescription()))
-            .forEach(System.out::println);
-
-        System.out.println();
-
-        linkInfoService.findByFilter().stream()
-            .sorted(Comparator.<LinkInfoResponse, String>comparing(it -> it.getDescription())
-                .thenComparing(it -> it.getEndTime()))
-            .forEach(System.out::println);
     }
 
     @Test
-    void test() {
-        testSneakyThrows();
-    }
+    void findByFilter() {
+        CreateShortLinkRequest request = CreateShortLinkRequest.builder()
+            .link("https://google.com")
+            .description("ABC")
+            .endTime(LocalDateTime.now().plusDays(2))
+            .build();
 
-    @Test
-    void annotation() {
-        Method[] methods = LinkInfoServiceImpl.class.getMethods();
+        linkInfoService.createLinkInfo(request);
 
-        Arrays.stream(methods)
-            .filter(method -> method.getAnnotation(LogExecutionTime.class) != null)
-            .forEach(method -> {
-                System.out.println(method.getAnnotation(LogExecutionTime.class).methodName());
-                System.out.println(method.getName());
-            });
-    }
+        List<LinkInfoResponse> linkInfoResponses = linkInfoService.findByFilter();
 
-    @SneakyThrows
-    private void testSneakyThrows() {
-        throw new IOException();
+        assertFalse(linkInfoResponses.isEmpty());
     }
 }
