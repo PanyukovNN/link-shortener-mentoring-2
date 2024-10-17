@@ -1,21 +1,27 @@
 package ru.panyukovnn.linkshortener;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.panyukovnn.linkshortener.dto.CreateShortLinkRequest;
 import ru.panyukovnn.linkshortener.dto.LinkInfoResponse;
-import ru.panyukovnn.linkshortener.repository.impl.LinkInfoRepositoryImpl;
+import ru.panyukovnn.linkshortener.dto.UpdateShortLinkRequest;
+import ru.panyukovnn.linkshortener.property.LinkShortenerProperty;
 import ru.panyukovnn.linkshortener.service.LinkInfoService;
-import ru.panyukovnn.linkshortener.service.impl.LinkInfoServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static ru.panyukovnn.linkshortener.util.Constants.SHORT_LINK_LENGTH;
 
+@SpringBootTest
 class LinkShortenerAppTest {
 
-    LinkInfoService linkInfoService = new LinkInfoServiceImpl(new LinkInfoRepositoryImpl());
+    @Autowired
+    private LinkInfoService linkInfoService;
+    @Autowired
+    private LinkShortenerProperty linkShortenerProperty;
 
     @Test
     void when_createShortLink_then_success() {
@@ -24,7 +30,7 @@ class LinkShortenerAppTest {
             .build();
 
         LinkInfoResponse response = linkInfoService.createLinkInfo(request);
-        assertEquals(SHORT_LINK_LENGTH, response.getShortLink().length());
+        assertEquals(linkShortenerProperty.getShortLinkLength(), response.getShortLink().length());
 
         LinkInfoResponse byShortLink = linkInfoService.getByShortLink(response.getShortLink());
         assertNotNull(byShortLink);
@@ -32,36 +38,6 @@ class LinkShortenerAppTest {
 
     @Test
     void when_findByFilter_then_success() {
-        CreateShortLinkRequest request1 = CreateShortLinkRequest.builder()
-            .link("https://google.com")
-            .description("ABC")
-            .endTime(LocalDateTime.now().plusDays(2))
-            .build();
-        CreateShortLinkRequest request2 = CreateShortLinkRequest.builder()
-            .link("https://ya.ru")
-            .description("DEF")
-            .endTime(LocalDateTime.now().plusDays(1))
-            .build();
-        CreateShortLinkRequest request3 = CreateShortLinkRequest.builder()
-            .link("https://youtube.coma")
-            .description("ABC")
-            .endTime(LocalDateTime.now().plusDays(3))
-            .build();
-
-        linkInfoService.createLinkInfo(request1);
-        linkInfoService.createLinkInfo(request2);
-        linkInfoService.createLinkInfo(request3);
-
-        // Можем самостоятельно реализовать сравнение через Comparable
-        linkInfoService.findByFilter().stream()
-            .sorted()
-            .forEach(System.out::println);
-
-        System.out.println();
-    }
-
-    @Test
-    void findByFilter() {
         CreateShortLinkRequest request = CreateShortLinkRequest.builder()
             .link("https://google.com")
             .description("ABC")
@@ -73,5 +49,53 @@ class LinkShortenerAppTest {
         List<LinkInfoResponse> linkInfoResponses = linkInfoService.findByFilter();
 
         assertFalse(linkInfoResponses.isEmpty());
+    }
+
+    @Test
+    void when_update_then_success() {
+        CreateShortLinkRequest request = CreateShortLinkRequest.builder()
+            .link("https://google.com")
+            .endTime(LocalDateTime.now().plusDays(1))
+            .description("test description")
+            .active(true)
+            .build();
+
+        LinkInfoResponse linkInfoResponse = linkInfoService.createLinkInfo(request);
+
+        UpdateShortLinkRequest updateRequest = UpdateShortLinkRequest.builder()
+            .id(linkInfoResponse.getId())
+            .link("https://ya.ru")
+            .endTime(LocalDateTime.now().plusDays(2))
+            .description("new description")
+            .active(false)
+            .build();
+
+        LinkInfoResponse updateResponse = linkInfoService.update(updateRequest);
+
+        assertEquals(updateRequest.getId(), updateResponse.getId());
+        assertEquals(updateRequest.getLink(), updateResponse.getLink());
+        assertEquals(updateRequest.getEndTime(), updateResponse.getEndTime());
+        assertEquals(updateRequest.getDescription(), updateResponse.getDescription());
+        assertFalse(updateResponse.getActive());
+    }
+
+    @Test
+    void when_delete_then_success() {
+        CreateShortLinkRequest request = CreateShortLinkRequest.builder()
+            .link("https://google.com")
+            .endTime(LocalDateTime.now().plusDays(1))
+            .description("test description")
+            .active(true)
+            .build();
+
+        LinkInfoResponse linkInfoResponse = linkInfoService.createLinkInfo(request);
+
+        List<LinkInfoResponse> allResponsesBeforeRemoval = linkInfoService.findByFilter();
+        assertThat(allResponsesBeforeRemoval).contains(linkInfoResponse);
+
+        linkInfoService.deleteById(linkInfoResponse.getId());
+
+        List<LinkInfoResponse> allResponsesAfterRemoval = linkInfoService.findByFilter();
+        assertThat(allResponsesAfterRemoval).doesNotContain(linkInfoResponse);
     }
 }

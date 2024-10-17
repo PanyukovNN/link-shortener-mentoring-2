@@ -1,3 +1,6 @@
 
 server:
   port: ${SERVER_PORT:8080}
+
+link-shortener:
+  short-link-length: 8

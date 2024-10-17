@@ -1,22 +1,22 @@
 package ru.panyukovnn.linkshortener.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Builder
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class LinkInfoResponse {
+public class UpdateShortLinkRequest {
 
     private UUID id;
     private String link;
-    private String shortLink;
     private LocalDateTime endTime;
     private String description;
     private Boolean active;
-    private Long openingCount;
 }
