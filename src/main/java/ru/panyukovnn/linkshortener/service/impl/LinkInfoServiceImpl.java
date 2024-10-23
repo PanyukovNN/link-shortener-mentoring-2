@@ -3,6 +3,7 @@ package ru.panyukovnn.linkshortener.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.panyukovnn.linkshortener.annotation.LogExecutionTime;
 import ru.panyukovnn.linkshortener.dto.CreateShortLinkRequest;
@@ -18,14 +19,14 @@ import java.util.List;
 import java.util.UUID;
 
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class LinkInfoServiceImpl implements LinkInfoService {
 
     private final LinkInfoRepository linkInfoRepository;
     private final LinkShortenerProperty linkShortenerProperty;
 
-    @Override
-    @LogExecutionTime(methodName = "Создание короткой ссылки")
+    @LogExecutionTime(methodName = "создания короткой ссылки")
     public LinkInfoResponse createLinkInfo(CreateShortLinkRequest createShortLinkRequest) {
         String shortLink = RandomStringUtils.randomAlphanumeric(linkShortenerProperty.getShortLinkLength());
 
@@ -43,7 +44,6 @@ public class LinkInfoServiceImpl implements LinkInfoService {
         return toResponse(savedLinkInfo);
     }
 
-    @Override
     @LogExecutionTime
     public LinkInfoResponse getByShortLink(String shortLink) {
         return linkInfoRepository.findByShortLink(shortLink)
@@ -51,7 +51,6 @@ public class LinkInfoServiceImpl implements LinkInfoService {
             .orElseThrow(() -> new NotFoundException("Не удалось найти сущность по короткой ссылке: " + shortLink));
     }
 
-    @Override
     @LogExecutionTime
     public List<LinkInfoResponse> findByFilter() {
         return linkInfoRepository.findAll().stream()
@@ -59,7 +58,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
             .toList();
     }
 
-    @Override
+    @LogExecutionTime
     public LinkInfoResponse update(UpdateShortLinkRequest updateShortLinkRequest) {
         LinkInfo linkInfo = linkInfoRepository.findById(updateShortLinkRequest.getId())
             .orElseThrow(() -> new NotFoundException("Не удалось найти сущность по идентификатору: " + updateShortLinkRequest.getId()));
@@ -85,7 +84,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
         return toResponse(linkInfo);
     }
 
-    @Override
+    @LogExecutionTime
     public void deleteById(UUID id) {
         linkInfoRepository.deleteById(id);
     }
