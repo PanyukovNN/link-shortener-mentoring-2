@@ -28,7 +28,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
     @LogExecutionTime(methodName = "создания короткой ссылки")
     public LinkInfoResponse createLinkInfo(CreateShortLinkRequest createShortLinkRequest) {
-        String shortLink = RandomStringUtils.randomAlphanumeric(linkShortenerProperty.getShortLinkLength());
+        String shortLink = RandomStringUtils.randomAlphanumeric(linkShortenerProperty.shortLinkLength());
 
         LinkInfo linkInfo = LinkInfo.builder()
             .shortLink(shortLink)
