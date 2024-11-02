@@ -11,6 +11,6 @@ spring:
     name: link-shortener
 
 link-shortener:
-  short-link-length: 7
+  short-link-length: 8
   logging:
     enable-log-execution-time: true

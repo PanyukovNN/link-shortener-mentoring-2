@@ -1,9 +1,12 @@
 package ru.panyukovnn.linkshortener.dto;
 
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.panyukovnn.linkshortener.validation.ValidLocalDateTime;
+import ru.panyukovnn.linkshortener.validation.ValidUUID;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,9 +17,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UpdateShortLinkRequest {
 
-    private UUID id;
+    @ValidUUID
+    private String id;
     private String link;
-    private LocalDateTime endTime;
+    @ValidLocalDateTime
+    private String endTime;
     private String description;
     private Boolean active;
 }

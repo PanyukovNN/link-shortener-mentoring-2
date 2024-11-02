@@ -30,7 +30,7 @@ class LinkShortenerAppTest {
             .build();
 
         LinkInfoResponse response = linkInfoService.createLinkInfo(request);
-        assertEquals(linkShortenerProperty.getShortLinkLength(), response.getShortLink().length());
+        assertEquals(linkShortenerProperty.shortLinkLength(), response.getShortLink().length());
 
         LinkInfoResponse byShortLink = linkInfoService.getByShortLink(response.getShortLink());
         assertNotNull(byShortLink);
@@ -63,18 +63,18 @@ class LinkShortenerAppTest {
         LinkInfoResponse linkInfoResponse = linkInfoService.createLinkInfo(request);
 
         UpdateShortLinkRequest updateRequest = UpdateShortLinkRequest.builder()
-            .id(linkInfoResponse.getId())
+            .id(linkInfoResponse.getId().toString())
             .link("https://ya.ru")
-            .endTime(LocalDateTime.now().plusDays(2))
+            .endTime(LocalDateTime.now().plusDays(2).toString())
             .description("new description")
             .active(false)
             .build();
 
         LinkInfoResponse updateResponse = linkInfoService.update(updateRequest);
 
-        assertEquals(updateRequest.getId(), updateResponse.getId());
+        assertEquals(updateRequest.getId(), updateResponse.getId().toString());
         assertEquals(updateRequest.getLink(), updateResponse.getLink());
-        assertEquals(updateRequest.getEndTime(), updateResponse.getEndTime());
+        assertEquals(updateRequest.getEndTime(), updateResponse.getEndTime().toString());
         assertEquals(updateRequest.getDescription(), updateResponse.getDescription());
         assertFalse(updateResponse.getActive());
     }

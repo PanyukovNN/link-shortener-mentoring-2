@@ -1,6 +1,5 @@
 package ru.panyukovnn.linkshortener.dto.common;
 
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommonRequest<T> {
+public class ValidationError {
 
-    @Valid
-    private T body;
+    private String field;
+    private String message;
 }

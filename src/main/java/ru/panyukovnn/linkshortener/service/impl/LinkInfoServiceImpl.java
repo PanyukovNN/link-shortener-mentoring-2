@@ -10,11 +10,13 @@ import ru.panyukovnn.linkshortener.dto.CreateShortLinkRequest;
 import ru.panyukovnn.linkshortener.dto.LinkInfoResponse;
 import ru.panyukovnn.linkshortener.dto.UpdateShortLinkRequest;
 import ru.panyukovnn.linkshortener.exception.NotFoundException;
+import ru.panyukovnn.linkshortener.mapper.LinkInfoMapper;
 import ru.panyukovnn.linkshortener.model.LinkInfo;
 import ru.panyukovnn.linkshortener.property.LinkShortenerProperty;
 import ru.panyukovnn.linkshortener.repository.LinkInfoRepository;
 import ru.panyukovnn.linkshortener.service.LinkInfoService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LinkInfoServiceImpl implements LinkInfoService {
 
+    private final LinkInfoMapper linkInfoMapper;
     private final LinkInfoRepository linkInfoRepository;
     private final LinkShortenerProperty linkShortenerProperty;
 
@@ -30,37 +33,30 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     public LinkInfoResponse createLinkInfo(CreateShortLinkRequest createShortLinkRequest) {
         String shortLink = RandomStringUtils.randomAlphanumeric(linkShortenerProperty.shortLinkLength());
 
-        LinkInfo linkInfo = LinkInfo.builder()
-            .shortLink(shortLink)
-            .link(createShortLinkRequest.getLink())
-            .description(createShortLinkRequest.getDescription())
-            .endTime(createShortLinkRequest.getEndTime())
-            .active(createShortLinkRequest.getActive())
-            .openingCount(0L)
-            .build();
+        LinkInfo linkInfo = linkInfoMapper.fromCreateRequest(createShortLinkRequest, shortLink);
 
         LinkInfo savedLinkInfo = linkInfoRepository.save(linkInfo);
 
-        return toResponse(savedLinkInfo);
+        return linkInfoMapper.toResponse(savedLinkInfo);
     }
 
     @LogExecutionTime
     public LinkInfoResponse getByShortLink(String shortLink) {
         return linkInfoRepository.findByShortLink(shortLink)
-            .map(this::toResponse)
+            .map(linkInfoMapper::toResponse)
             .orElseThrow(() -> new NotFoundException("Не удалось найти сущность по короткой ссылке: " + shortLink));
     }
 
     @LogExecutionTime
     public List<LinkInfoResponse> findByFilter() {
         return linkInfoRepository.findAll().stream()
-            .map(this::toResponse)
+            .map(linkInfoMapper::toResponse)
             .toList();
     }
 
     @LogExecutionTime
     public LinkInfoResponse update(UpdateShortLinkRequest updateShortLinkRequest) {
-        LinkInfo linkInfo = linkInfoRepository.findById(updateShortLinkRequest.getId())
+        LinkInfo linkInfo = linkInfoRepository.findById(UUID.fromString(updateShortLinkRequest.getId()))
             .orElseThrow(() -> new NotFoundException("Не удалось найти сущность по идентификатору: " + updateShortLinkRequest.getId()));
 
         if (StringUtils.hasText(updateShortLinkRequest.getLink())) {
@@ -68,7 +64,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
         }
 
         if (updateShortLinkRequest.getEndTime() != null) {
-            linkInfo.setEndTime(updateShortLinkRequest.getEndTime());
+            linkInfo.setEndTime(LocalDateTime.parse(updateShortLinkRequest.getEndTime()));
         }
 
         if (StringUtils.hasText(updateShortLinkRequest.getDescription())) {
@@ -81,23 +77,11 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
         linkInfoRepository.save(linkInfo);
 
-        return toResponse(linkInfo);
+        return linkInfoMapper.toResponse(linkInfo);
     }
 
     @LogExecutionTime
     public void deleteById(UUID id) {
         linkInfoRepository.deleteById(id);
-    }
-
-    private LinkInfoResponse toResponse(LinkInfo linkInfo) {
-        return LinkInfoResponse.builder()
-            .id(linkInfo.getId())
-            .link(linkInfo.getLink())
-            .shortLink(linkInfo.getShortLink())
-            .endTime(linkInfo.getEndTime())
-            .description(linkInfo.getDescription())
-            .active(linkInfo.getActive())
-            .openingCount(linkInfo.getOpeningCount())
-            .build();
     }
 }

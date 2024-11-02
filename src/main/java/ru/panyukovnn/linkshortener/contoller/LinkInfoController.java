@@ -1,5 +1,6 @@
 package ru.panyukovnn.linkshortener.contoller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class LinkInfoController {
     private final LinkInfoService linkInfoService;
 
     @PostMapping
-    public CommonResponse<LinkInfoResponse> postCreateLinkInfo(@RequestBody CommonRequest<CreateShortLinkRequest> request) {
+    public CommonResponse<LinkInfoResponse> postCreateLinkInfo(@RequestBody @Valid CommonRequest<CreateShortLinkRequest> request) {
         log.info("Поступил запрос на создание короткой ссылки: {}", request);
 
         LinkInfoResponse linkInfoResponse = linkInfoService.createLinkInfo(request.getBody());
@@ -47,7 +48,7 @@ public class LinkInfoController {
     }
 
     @PatchMapping
-    public CommonResponse<LinkInfoResponse> patchLinkInfos(@RequestBody CommonRequest<UpdateShortLinkRequest> request) {
+    public CommonResponse<LinkInfoResponse> patchLinkInfos(@RequestBody @Valid CommonRequest<UpdateShortLinkRequest> request) {
         LinkInfoResponse linkInfoResponse = linkInfoService.update(request.getBody());
 
         return CommonResponse.<LinkInfoResponse>builder()
