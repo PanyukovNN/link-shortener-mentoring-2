@@ -22,7 +22,6 @@ public class UpdateShortLinkRequest {
     private String link;
     @Future(message = "Дата окончания действия короткой ссылки не может быть в прошлом")
     private LocalDateTime endTime;
-    @Min(value = 1, message = "Описание не может быть пустым")
     private String description;
     private Boolean active;
 }

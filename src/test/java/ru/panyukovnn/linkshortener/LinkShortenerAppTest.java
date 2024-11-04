@@ -245,8 +245,7 @@ class LinkShortenerAppTest {
             Arguments.of(invalidUpdateLinkInfoBuilder().id(null).build(), "body.id"),
             Arguments.of(invalidUpdateLinkInfoBuilder().link("htt://test.com").build(), "body.link"),
             Arguments.of(invalidUpdateLinkInfoBuilder().link("").build(), "body.link"),
-            Arguments.of(invalidUpdateLinkInfoBuilder().endTime(LocalDateTime.now().minusDays(1)).build(), "body.endTime"),
-            Arguments.of(invalidUpdateLinkInfoBuilder().description("").build(), "body.description")
+            Arguments.of(invalidUpdateLinkInfoBuilder().endTime(LocalDateTime.now().minusDays(1)).build(), "body.endTime")
         );
     }
 
