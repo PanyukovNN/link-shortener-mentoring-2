@@ -3,7 +3,6 @@ package ru.panyukovnn.linkshortener.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 @Component
 public class ValidUUIDValidator implements ConstraintValidator<ValidUUID, String> {
@@ -12,8 +11,8 @@ public class ValidUUIDValidator implements ConstraintValidator<ValidUUID, String
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (!StringUtils.hasText(value)) {
-            return false;
+        if (value == null) {
+            return true;
         }
 
         return value.matches(UUID_PATTERN);

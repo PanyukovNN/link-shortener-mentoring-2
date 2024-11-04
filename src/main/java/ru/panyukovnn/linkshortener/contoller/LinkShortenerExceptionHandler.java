@@ -1,10 +1,13 @@
 package ru.panyukovnn.linkshortener.contoller;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,10 +15,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.panyukovnn.linkshortener.dto.common.CommonResponse;
 import ru.panyukovnn.linkshortener.dto.common.ValidationError;
-import ru.panyukovnn.linkshortener.exception.NotFoundException;
+import ru.panyukovnn.linkshortener.exception.NotFoundShortLinkException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -44,8 +48,28 @@ public class LinkShortenerExceptionHandler {
             .build();
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<String> handleNotFoundPageException(NotFoundException e) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public CommonResponse<?> handleInvalidFormatException(HttpMessageNotReadableException e) {
+        if (e.getCause() instanceof InvalidFormatException ife) {
+            String path = ife.getPath().stream()
+                .map(JsonMappingException.Reference::getFieldName)
+                .collect(Collectors.joining("."));
+
+            String errMessage = "Ошибка валидации, указан некорректный формат поля '" + path + "'";
+
+            log.error(errMessage, e);
+
+            return CommonResponse.builder()
+                .errorMessage(errMessage)
+                .build();
+        }
+
+        return handleException(e);
+    }
+
+    @ExceptionHandler(NotFoundShortLinkException.class)
+    public ResponseEntity<String> handleNotFoundPageException(NotFoundShortLinkException e) {
         log.warn(e.getMessage(), e);
 
         return ResponseEntity
@@ -54,6 +78,7 @@ public class LinkShortenerExceptionHandler {
             .body(notFoundPage);
     }
 
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public CommonResponse<?> handleException(Exception e) {
         log.error("Непредвиденное исключение: {}", e.getMessage(), e);

@@ -16,7 +16,8 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommonResponse<T> {
 
-    private UUID id;
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
     private T body;
 
     private String errorMessage;

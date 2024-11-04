@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.panyukovnn.linkshortener.annotation.LogExecutionTime;
 import ru.panyukovnn.linkshortener.dto.CreateShortLinkRequest;
+import ru.panyukovnn.linkshortener.dto.FilterLinkInfoRequest;
 import ru.panyukovnn.linkshortener.dto.LinkInfoResponse;
 import ru.panyukovnn.linkshortener.dto.UpdateShortLinkRequest;
 import ru.panyukovnn.linkshortener.exception.NotFoundException;
+import ru.panyukovnn.linkshortener.exception.NotFoundShortLinkException;
 import ru.panyukovnn.linkshortener.mapper.LinkInfoMapper;
 import ru.panyukovnn.linkshortener.model.LinkInfo;
 import ru.panyukovnn.linkshortener.property.LinkShortenerProperty;
@@ -42,14 +44,23 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
     @LogExecutionTime
     public LinkInfoResponse getByShortLink(String shortLink) {
-        return linkInfoRepository.findByShortLink(shortLink)
-            .map(linkInfoMapper::toResponse)
-            .orElseThrow(() -> new NotFoundException("Не удалось найти сущность по короткой ссылке: " + shortLink));
+        LinkInfo linkInfo = linkInfoRepository.findActiveShortLink(shortLink, LocalDateTime.now())
+            .orElseThrow(() -> new NotFoundShortLinkException("Не удалось найти сущность по короткой ссылке: " + shortLink));
+
+        linkInfoRepository.incrementOpeningCountByShortLink(shortLink);
+
+        return linkInfoMapper.toResponse(linkInfo);
     }
 
     @LogExecutionTime
-    public List<LinkInfoResponse> findByFilter() {
-        return linkInfoRepository.findAll().stream()
+    public List<LinkInfoResponse> findByFilter(FilterLinkInfoRequest filterRequest) {
+        return linkInfoRepository.findByFilter(
+                filterRequest.getLinkPart(),
+                filterRequest.getEndTimeFrom(),
+                filterRequest.getEndTimeTo(),
+                filterRequest.getDescriptionPart(),
+                filterRequest.getActive()
+            ).stream()
             .map(linkInfoMapper::toResponse)
             .toList();
     }
@@ -63,9 +74,7 @@ public class LinkInfoServiceImpl implements LinkInfoService {
             linkInfo.setLink(updateShortLinkRequest.getLink());
         }
 
-        if (updateShortLinkRequest.getEndTime() != null) {
-            linkInfo.setEndTime(LocalDateTime.parse(updateShortLinkRequest.getEndTime()));
-        }
+        linkInfo.setEndTime(updateShortLinkRequest.getEndTime());
 
         if (StringUtils.hasText(updateShortLinkRequest.getDescription())) {
             linkInfo.setDescription(updateShortLinkRequest.getDescription());
