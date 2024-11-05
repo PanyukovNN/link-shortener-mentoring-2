@@ -26,11 +26,7 @@ public class LinkInfoController {
 
     @PostMapping
     public CommonResponse<LinkInfoResponse> postCreateLinkInfo(@RequestBody @Valid CommonRequest<CreateShortLinkRequest> request) {
-        log.info("Поступил запрос на создание короткой ссылки: {}", request);
-
         LinkInfoResponse linkInfoResponse = linkInfoService.createLinkInfo(request.getBody());
-
-        log.info("Короткая ссылка создана успешно: {}", linkInfoResponse);
 
         return CommonResponse.<LinkInfoResponse>builder()
             .id(UUID.randomUUID())
