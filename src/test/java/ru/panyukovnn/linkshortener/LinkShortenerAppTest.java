@@ -9,11 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.panyukovnn.linkshortener.dto.CreateShortLinkRequest;
 import ru.panyukovnn.linkshortener.dto.FilterLinkInfoRequest;
+import ru.panyukovnn.linkshortener.dto.PageableRequest;
 import ru.panyukovnn.linkshortener.dto.UpdateShortLinkRequest;
 import ru.panyukovnn.linkshortener.dto.common.CommonRequest;
 import ru.panyukovnn.linkshortener.model.LinkInfo;
@@ -26,8 +30,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -104,6 +107,10 @@ class LinkShortenerAppTest {
     void when_postFilter_then_success() throws Exception {
         FilterLinkInfoRequest filterLinkInfoRequest = FilterLinkInfoRequest.builder()
             .linkPart("go")
+            .page(PageableRequest.builder()
+                .number(1)
+                .size(5)
+                .build())
             .build();
 
         CommonRequest<FilterLinkInfoRequest> request = CommonRequest.<FilterLinkInfoRequest>builder()
@@ -112,8 +119,8 @@ class LinkShortenerAppTest {
 
         LinkInfo linkInfo = createMockLinkInfo();
 
-        when(linkInfoRepository.findByFilter(filterLinkInfoRequest.getLinkPart(), null, null, null, null))
-            .thenReturn(List.of(linkInfo));
+        when(linkInfoRepository.findByFilter(eq(filterLinkInfoRequest.getLinkPart()), isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+            .thenReturn(new PageImpl<>(List.of(linkInfo), PageRequest.of(0, 5), 1));
 
         mockMvc.perform(post(LINK_INFOS_BASE_URL + "/filter")
                 .content(objectMapper.writeValueAsBytes(request))

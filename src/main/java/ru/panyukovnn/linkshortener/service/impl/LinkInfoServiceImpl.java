@@ -3,13 +3,12 @@ package ru.panyukovnn.linkshortener.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import ru.panyukovnn.linkshortener.annotation.LogExecutionTime;
-import ru.panyukovnn.linkshortener.dto.CreateShortLinkRequest;
-import ru.panyukovnn.linkshortener.dto.FilterLinkInfoRequest;
-import ru.panyukovnn.linkshortener.dto.LinkInfoResponse;
-import ru.panyukovnn.linkshortener.dto.UpdateShortLinkRequest;
+import ru.panyukovnn.linkshortener.dto.*;
 import ru.panyukovnn.linkshortener.exception.NotFoundException;
 import ru.panyukovnn.linkshortener.exception.NotFoundShortLinkException;
 import ru.panyukovnn.linkshortener.mapper.LinkInfoMapper;
@@ -17,6 +16,7 @@ import ru.panyukovnn.linkshortener.model.LinkInfo;
 import ru.panyukovnn.linkshortener.property.LinkShortenerProperty;
 import ru.panyukovnn.linkshortener.repository.LinkInfoRepository;
 import ru.panyukovnn.linkshortener.service.LinkInfoService;
+import ru.panyukovnn.loggingstarter.annotation.LogExecutionTime;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,12 +54,17 @@ public class LinkInfoServiceImpl implements LinkInfoService {
 
     @LogExecutionTime
     public List<LinkInfoResponse> findByFilter(FilterLinkInfoRequest filterRequest) {
+        PageableRequest page = filterRequest.getPage();
+
+        Pageable pageable = mapPageable(page);
+
         return linkInfoRepository.findByFilter(
                 filterRequest.getLinkPart(),
                 filterRequest.getEndTimeFrom(),
                 filterRequest.getEndTimeTo(),
                 filterRequest.getDescriptionPart(),
-                filterRequest.getActive()
+                filterRequest.getActive(),
+                pageable
             ).stream()
             .map(linkInfoMapper::toResponse)
             .toList();
@@ -92,5 +97,16 @@ public class LinkInfoServiceImpl implements LinkInfoService {
     @LogExecutionTime
     public void deleteById(UUID id) {
         linkInfoRepository.deleteById(id);
+    }
+
+    private Pageable mapPageable(PageableRequest page) {
+        List<Sort.Order> sorts = page.getSorts().stream()
+            .map(sort -> new Sort.Order(
+                Sort.Direction.valueOf(sort.getDirection()),
+                sort.getField()
+            ))
+            .toList();
+
+        return PageRequest.of(page.getNumber() - 1, page.getSize(), Sort.by(sorts));
     }
 }
