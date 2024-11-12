@@ -22,4 +22,9 @@ public class CommonResponse<T> {
 
     private String errorMessage;
     private List<ValidationError> validationErrors;
+
+    public CommonResponse(T body) {
+        this.id = UUID.randomUUID();
+        this.body = body;
+    }
 }
