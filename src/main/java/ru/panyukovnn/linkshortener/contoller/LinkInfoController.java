@@ -29,7 +29,6 @@ public class LinkInfoController {
         LinkInfoResponse linkInfoResponse = linkInfoService.createLinkInfo(request.getBody());
 
         return CommonResponse.<LinkInfoResponse>builder()
-            .id(UUID.randomUUID())
             .body(linkInfoResponse)
             .build();
     }
@@ -39,7 +38,6 @@ public class LinkInfoController {
         List<LinkInfoResponse> linkInfoResponses = linkInfoService.findByFilter(request.getBody());
 
         return CommonResponse.<List<LinkInfoResponse>>builder()
-            .id(UUID.randomUUID())
             .body(linkInfoResponses)
             .build();
     }
@@ -49,7 +47,6 @@ public class LinkInfoController {
         LinkInfoResponse linkInfoResponse = linkInfoService.update(request.getBody());
 
         return CommonResponse.<LinkInfoResponse>builder()
-            .id(UUID.randomUUID())
             .body(linkInfoResponse)
             .build();
     }
@@ -60,7 +57,6 @@ public class LinkInfoController {
         linkInfoService.deleteById(UUID.fromString(id));
 
         return CommonResponse.builder()
-            .id(UUID.randomUUID())
             .build();
     }
 }
