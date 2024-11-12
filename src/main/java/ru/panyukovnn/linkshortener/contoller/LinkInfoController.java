@@ -28,30 +28,21 @@ public class LinkInfoController {
     public CommonResponse<LinkInfoResponse> postCreateLinkInfo(@RequestBody @Valid CommonRequest<CreateShortLinkRequest> request) {
         LinkInfoResponse linkInfoResponse = linkInfoService.createLinkInfo(request.getBody());
 
-        return CommonResponse.<LinkInfoResponse>builder()
-            .id(UUID.randomUUID())
-            .body(linkInfoResponse)
-            .build();
+        return new CommonResponse<>(linkInfoResponse);
     }
 
     @PostMapping("/filter")
     public CommonResponse<List<LinkInfoResponse>> postFilter(@RequestBody @Valid CommonRequest<FilterLinkInfoRequest> request) {
         List<LinkInfoResponse> linkInfoResponses = linkInfoService.findByFilter(request.getBody());
 
-        return CommonResponse.<List<LinkInfoResponse>>builder()
-            .id(UUID.randomUUID())
-            .body(linkInfoResponses)
-            .build();
+        return new CommonResponse<>(linkInfoResponses);
     }
 
     @PatchMapping
     public CommonResponse<LinkInfoResponse> patchLinkInfos(@RequestBody @Valid CommonRequest<UpdateShortLinkRequest> request) {
         LinkInfoResponse linkInfoResponse = linkInfoService.update(request.getBody());
 
-        return CommonResponse.<LinkInfoResponse>builder()
-            .id(UUID.randomUUID())
-            .body(linkInfoResponse)
-            .build();
+        return new CommonResponse<>(linkInfoResponse);
     }
 
     @DeleteMapping("/{id}")
@@ -59,8 +50,6 @@ public class LinkInfoController {
     public CommonResponse<?> deleteLinkInfos(@PathVariable String id) {
         linkInfoService.deleteById(UUID.fromString(id));
 
-        return CommonResponse.builder()
-            .id(UUID.randomUUID())
-            .build();
+        return new CommonResponse<>();
     }
 }
