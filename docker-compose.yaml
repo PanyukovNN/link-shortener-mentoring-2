@@ -20,7 +20,7 @@ services:
     depends_on:
       - postgres-link-shortener
     build: .
-    container_name: link-shotener
+    container_name: link-shortener
     ports:
       - "8080:8080"
     environment:
